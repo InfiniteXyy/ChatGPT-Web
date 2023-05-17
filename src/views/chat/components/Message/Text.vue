@@ -106,14 +106,20 @@ onUnmounted(() => {
 <template>
   <div class="text-black" :class="wrapClass">
     <div ref="textRef" class="leading-relaxed break-words">
-      <div v-if="!inversion">
+      <!-- <div v-if="!inversion">
         <div v-if="!asRawText" class="markdown-body" v-html="text" />
         <div v-else class="whitespace-pre-wrap" v-text="text" />
       </div>
       <div v-else class="whitespace-pre-wrap" v-text="text" />
       <template v-if="loading">
-        <span class="dark:text-white w-[4px] h-[20px] block animate-blink" />
-      </template>
+        <span class="dark:text-white w-[4px] h-[20px] inline-block animate-blink" />
+      </template> -->
+      <div v-if="!inversion" class="flex items-end">
+        <div v-if="!asRawText" class="w-full markdown-body" v-html="text" />
+        <div v-else class="w-full whitespace-pre-wrap" v-text="text" />
+        <span v-if="loading" class="dark:text-white w-[4px] h-[20px] block animate-blink" />
+      </div>
+      <div v-else class="whitespace-pre-wrap" v-text="text" />
     </div>
   </div>
 </template>
