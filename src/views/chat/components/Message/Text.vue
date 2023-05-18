@@ -117,7 +117,7 @@ onUnmounted(() => {
       <div v-if="!inversion" class="flex items-end">
         <div v-if="!asRawText" class="w-full markdown-body" v-html="text" />
         <div v-else class="w-full whitespace-pre-wrap" v-text="text" />
-        <span v-if="loading" class="dark:text-white w-[4px] h-[20px] block animate-blink" />
+        <span v-if="loading" class="flex-shrink-0 dark:text-white w-[4px] h-[20px] block animate-blink" />
       </div>
       <div v-else class="whitespace-pre-wrap" v-text="text" />
     </div>
