@@ -4,9 +4,9 @@ import { computed, ref, watch } from 'vue'
 import { NButton, NLayoutSider } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
+import { PromptStore, SvgIcon } from '@/components/common'
 import { useAppStore, useChatStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { PromptStore } from '@/components/common'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
@@ -72,8 +72,11 @@ watch(
     <div class="flex flex-col h-full" :style="mobileSafeArea">
       <main class="flex flex-col flex-1 min-h-0">
         <div class="p-4">
-          <NButton dashed block @click="handleAdd">
-            {{ $t('chat.newChatButton') }}
+          <NButton block @click="handleAdd">
+            <SvgIcon class="text-lg mr-1" icon="mdi:plus" />
+            <div class="font-medium">
+              {{ $t('chat.newChatButton') }}
+            </div>
           </NButton>
         </div>
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
