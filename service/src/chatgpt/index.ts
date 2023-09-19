@@ -27,7 +27,7 @@ const timeoutMs: number = !isNaN(+process.env.TIMEOUT_MS) ? +process.env.TIMEOUT
 const disableDebug: boolean = process.env.OPENAI_API_DISABLE_DEBUG === 'true'
 
 let apiModel: ApiModel
-const model = isNotEmptyString(process.env.OPENAI_API_MODEL) ? process.env.OPENAI_API_MODEL : 'gpt-3.5-turbo'
+const defaultModel = isNotEmptyString(process.env.OPENAI_API_MODEL) ? process.env.OPENAI_API_MODEL : 'gpt-3.5-turbo'
 
 if (!isNotEmptyString(process.env.OPENAI_API_KEY) && !isNotEmptyString(process.env.OPENAI_ACCESS_TOKEN))
   throw new Error('Missing OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable')
@@ -42,14 +42,14 @@ let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 
     const options: ChatGPTAPIOptions = {
       apiKey: process.env.OPENAI_API_KEY,
-      completionParams: { model },
+      completionParams: { model: defaultModel },
       debug: !disableDebug,
     }
 
     // increase max token limit if use gpt-4
-    if (model.toLowerCase().includes('gpt-4')) {
+    if (defaultModel.toLowerCase().includes('gpt-4')) {
       // if use 32k model
-      if (model.toLowerCase().includes('32k')) {
+      if (defaultModel.toLowerCase().includes('32k')) {
         options.maxModelTokens = 32768
         options.maxResponseTokens = 8192
       }
@@ -58,8 +58,8 @@ let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
         options.maxResponseTokens = 2048
       }
     }
-    else if (model.toLowerCase().includes('gpt-3.5')) {
-      if (model.toLowerCase().includes('16k')) {
+    else if (defaultModel.toLowerCase().includes('gpt-3.5')) {
+      if (defaultModel.toLowerCase().includes('16k')) {
         options.maxModelTokens = 16384
         options.maxResponseTokens = 4096
       }
@@ -77,7 +77,7 @@ let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
     const options: ChatGPTUnofficialProxyAPIOptions = {
       accessToken: process.env.OPENAI_ACCESS_TOKEN,
       apiReverseProxyUrl: isNotEmptyString(process.env.API_REVERSE_PROXY) ? process.env.API_REVERSE_PROXY : 'https://ai.fakeopen.com/api/conversation',
-      model,
+      model: defaultModel,
       debug: !disableDebug,
     }
 
@@ -89,14 +89,14 @@ let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 })()
 
 async function chatReplyProcess(options: RequestOptions) {
-  const { message, lastContext, process, systemMessage, temperature, top_p } = options
+  const { message, lastContext, process, systemMessage, temperature, top_p, model } = options
   try {
     let options: SendMessageOptions = { timeoutMs }
 
     if (apiModel === 'ChatGPTAPI') {
       if (isNotEmptyString(systemMessage))
         options.systemMessage = systemMessage
-      options.completionParams = { model, temperature, top_p }
+      options.completionParams = { model: model ?? defaultModel, temperature, top_p }
     }
 
     if (lastContext != null) {

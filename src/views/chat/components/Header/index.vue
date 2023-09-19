@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { computed, nextTick } from 'vue'
 import { HoverButton, SvgIcon } from '@/components/common'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useChatStore, useSettingStore } from '@/store'
 
 interface Props {
   usingContext: boolean
 }
 
 interface Emit {
-  (ev: 'export'): void
+  (ev: 'toggleModel'): void
   (ev: 'handleClear'): void
 }
 
@@ -18,6 +18,7 @@ const emit = defineEmits<Emit>()
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
+const settingStore = useSettingStore()
 
 const collapsed = computed(() => appStore.siderCollapsed)
 const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
@@ -32,8 +33,8 @@ function onScrollToTop() {
     nextTick(() => scrollRef.scrollTop = 0)
 }
 
-function handleExport() {
-  emit('export')
+function handleToggleModel() {
+  emit('toggleModel')
 }
 
 function handleClear() {
@@ -62,9 +63,9 @@ function handleClear() {
         {{ currentChatHistory?.title ?? '' }}
       </h1>
       <div class="flex items-center space-x-2">
-        <HoverButton @click="handleExport">
+        <HoverButton @click="handleToggleModel">
           <span class="text-xl text-[#4f555e] dark:text-white">
-            <SvgIcon icon="ri:download-2-line" />
+            <SvgIcon :icon="settingStore.model === 'gpt-3.5-turbo' ? 'ic:round-star-border' : 'ic:round-star'" />
           </span>
         </HoverButton>
         <HoverButton @click="handleClear">

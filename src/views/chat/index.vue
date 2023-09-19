@@ -4,7 +4,6 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { NAutoComplete, NButton, NInput, useDialog, useMessage } from 'naive-ui'
-import html2canvas from 'html2canvas'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
@@ -12,7 +11,7 @@ import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore, usePromptStore } from '@/store'
+import { useChatStore, usePromptStore, useSettingStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 
@@ -30,6 +29,7 @@ const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 const { usingContext, toggleUsingContext } = useUsingContext()
+const settingStore = useSettingStore()
 
 const { uuid } = route.params as { uuid: string }
 
@@ -314,46 +314,11 @@ async function onRegenerate(index: number) {
   }
 }
 
-function handleExport() {
+function handleToggleModel() {
   if (loading.value)
     return
-
-  const d = dialog.warning({
-    title: t('chat.exportImage'),
-    content: t('chat.exportImageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
-    onPositiveClick: async () => {
-      try {
-        d.loading = true
-        const ele = document.getElementById('image-wrapper')
-        const canvas = await html2canvas(ele as HTMLDivElement, {
-          useCORS: true,
-        })
-        const imgUrl = canvas.toDataURL('image/png')
-        const tempLink = document.createElement('a')
-        tempLink.style.display = 'none'
-        tempLink.href = imgUrl
-        tempLink.setAttribute('download', 'chat-shot.png')
-        if (typeof tempLink.download === 'undefined')
-          tempLink.setAttribute('target', '_blank')
-
-        document.body.appendChild(tempLink)
-        tempLink.click()
-        document.body.removeChild(tempLink)
-        window.URL.revokeObjectURL(imgUrl)
-        d.loading = false
-        ms.success(t('chat.exportSuccess'))
-        Promise.resolve()
-      }
-      catch (error: any) {
-        ms.error(t('chat.exportFailed'))
-      }
-      finally {
-        d.loading = false
-      }
-    },
-  })
+  settingStore.model = settingStore.model === 'gpt-3.5-turbo' ? 'gpt-4' : 'gpt-3.5-turbo'
+  ms.success(`切换到：${settingStore.model}`)
 }
 
 function handleDelete(index: number) {
@@ -468,7 +433,7 @@ onUnmounted(() => {
     <HeaderComponent
       v-if="isMobile"
       :using-context="usingContext"
-      @export="handleExport"
+      @toggle-model="handleToggleModel"
       @handle-clear="handleClear"
     />
     <main class="flex-1 overflow-hidden">
@@ -501,7 +466,7 @@ onUnmounted(() => {
                   <template #icon>
                     <SvgIcon icon="ri:stop-circle-line" />
                   </template>
-									{{ t('common.stopResponding') }}
+                  {{ t('common.stopResponding') }}
                 </NButton>
               </div>
             </div>
@@ -517,9 +482,9 @@ onUnmounted(() => {
               <SvgIcon icon="ri:delete-bin-line" />
             </span>
           </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
+          <HoverButton v-if="!isMobile" @click="handleToggleModel">
             <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
+              <SvgIcon :icon="settingStore.model === 'gpt-3.5-turbo' ? 'ic:round-star-border' : 'ic:round-star'" />
             </span>
           </HoverButton>
           <HoverButton @click="toggleUsingContext">
